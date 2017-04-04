@@ -1,3 +1,10 @@
 /BasicClient.class
 /BasicServer.class
 /ConnectionHandler.class
+/ConnectionsHandler.class
+/ClientConnectionHandler.class
+/RouterConnectionHandler.class
+/BasicRouter.class
+/BasicChecksum.class
+/BasicClient$ClientConnectionHandler.class
+/ClientConnectionHandlerData.class
