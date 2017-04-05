@@ -21,7 +21,8 @@ class ClientConnectionHandler extends Thread {
 		/**
 		 * Runs the individual thread.
 		 */
-		public void run() {
+		public void run() 
+		{
 			byte destination = (byte) (Math.random() * 3);
 			// byte checksum = computeChecksum(source, destination, data1,
 			// data2);

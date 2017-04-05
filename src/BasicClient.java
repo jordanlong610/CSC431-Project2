@@ -1,15 +1,8 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.ClassNotFoundException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 public class BasicClient {
 	private static final int DURATION = 60;
@@ -48,6 +41,10 @@ public class BasicClient {
 		}
 		server.close();
 	}
+	
+	
+	
+	
 
 	public void readMessage(byte[] input)
 	{
