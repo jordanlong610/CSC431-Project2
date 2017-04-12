@@ -27,7 +27,7 @@ public class Router
 
 		@SuppressWarnings("resource") //Server is never closed
 		ServerSocket server = new ServerSocket(4446);
-        System.out.println("Server opened on port 4446");
+        System.out.println("Router Started: "+ server);
 
         while (true)
         {
@@ -63,41 +63,72 @@ class ConnectionHandler extends Thread
     	while (socket.isConnected() && !socket.isClosed())
     	{
 
-    		/**
-			 *  Read message from Client. Prints to console for reference.
-			 */
-
-    		byte[] inputMsg= new byte[5];
-    		try
-    		{
-				input.readFully(inputMsg, 0, 5);
-			}
-    		catch (IOException e1)
-    		{
-				e1.printStackTrace();
-			}
-    		System.out.println("Router Received Message from Client: " + inputMsg[0]);
-    		System.out.println("Data1: " + inputMsg[3]);
-    		System.out.println("Data2: " + inputMsg[4]);
 
 
-
-            /**
-             *  Return message to client.
-             */
-
-            try
-            {
-				output.write(inputMsg);
-			}
-            catch (IOException e)
-            {
-				e.printStackTrace();
-            }
-
-            System.out.println("Router Sent Message to Client: " + inputMsg[1]);
-    		System.out.println("Data1: " + inputMsg[3]);
-    		System.out.println("Data2: " + inputMsg[4]);
     	}
     }
+
+
+
+
+
+	/**
+	 *  Read message from Client. Prints to console for reference.
+	 *  @return message The received message from a client.
+	 */
+
+    public byte[] receiveMessage(byte[] message)
+    {
+		byte[] inputMsg= new byte[5];
+		try
+		{
+			input.readFully(inputMsg, 0, 5);
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
+		System.out.println("Router Received Message from Client: " + inputMsg[0]);
+		System.out.println("Data1: " + inputMsg[3]);
+		System.out.println("Data2: " + inputMsg[4]);
+
+		return message;
+    }
+
+
+    /**
+     *  Send message to a client.
+     */
+
+    public void sendMessage(byte[] message)
+    {
+        try
+        {
+			output.write(message);
+		}
+        catch (IOException e)
+        {
+			e.printStackTrace();
+        }
+
+        System.out.println("Router Sent Message to Client: " + message[1]);
+		System.out.println("Data1: " + message[3]);
+		System.out.println("Data2: " + message[4]);
+    }
+
+    public int routingTable(byte[] message)
+    {
+    	int destination= message[1];
+    	int route = 0;
+
+
+
+
+
+    	return route;
+
+    }
+
+
+
 }
