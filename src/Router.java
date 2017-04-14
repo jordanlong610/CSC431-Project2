@@ -64,7 +64,7 @@ class RouterHandler extends Thread
     	{
     		byte[] message = receiveMessage();
     	}
-    	
+
     }
 
 
@@ -78,7 +78,7 @@ class RouterHandler extends Thread
 		int checksum = 256 - (data[0]+data[1]+data[3]+data[4]);
 		return (byte)(checksum);
 	}
-	
+
 
 
 	/**
@@ -104,7 +104,7 @@ class RouterHandler extends Thread
         	System.out.println("Checksum valid, message is not corrupt.");
     		System.out.println("Data1: " + message[3]);
     		System.out.println("Data2: " + message[4]);
-    		
+
     		//Send message to another client or router
     		sendMessage(message);
         }
@@ -115,8 +115,8 @@ class RouterHandler extends Thread
 
 		return message;
     }
-    
-    
+
+
 
 
     /**
@@ -127,7 +127,7 @@ class RouterHandler extends Thread
     {
         int destination = message[1];
         int currentRouter = 0; //not true
-    	
+
     	if(destination == currentRouter)
         {
         	//send to client
@@ -136,9 +136,9 @@ class RouterHandler extends Thread
     	{
     		//send to router
     	}
-    	
-    	
-    	
+
+
+
     	try
         {
 			output.write(message);
@@ -150,11 +150,11 @@ class RouterHandler extends Thread
         }
 
     }
-    
-    
 
-    
-    
+
+
+
+
 
     /**
      * Routing table for messages to be sent.
@@ -180,11 +180,11 @@ class RouterHandler extends Thread
         	}
         	else if(destination == 3)
         	{
-        		
+
         	}
         	else if(destination == 4)
         	{
-        		
+
         	}
     	}
     	//Router 2
@@ -192,40 +192,40 @@ class RouterHandler extends Thread
     	{
         	if(destination == 1)
         	{
-        		
+
         	}
         	else if(destination == 2)
         	{
-        		
+
         	}
         	else if(destination == 3)
         	{
-        		
+
         	}
         	else if(destination == 4)
         	{
-        		
+
         	}
     	}
-    	
+
     	//Router 3
     	else if(source == 3)
     	{
         	if(destination == 1)
         	{
-        		
+
         	}
         	else if(destination == 2)
         	{
-        		
+
         	}
         	else if(destination == 3)
         	{
-        		
+
         	}
         	else if(destination == 4)
         	{
-        		
+
         	}
     	}
     	//Router 4
@@ -233,19 +233,19 @@ class RouterHandler extends Thread
     	{
         	if(destination == 1)
         	{
-        		
+
         	}
         	else if(destination == 2)
         	{
-        		
+
         	}
         	else if(destination == 3)
         	{
-        		
+
         	}
         	else if(destination == 4)
         	{
-        		
+
         	}
     	}
 
