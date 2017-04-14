@@ -2,7 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ClassNotFoundException;
-import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -17,61 +17,94 @@ public class Client
 	 *
 	 */
 
-	static int SOURCE = 1;  //Static Client ID
-	static int PORT = 4446;
+	
+    public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException
+    {
+        /**
+         * A server is created listening on port 4446. Each time a new
+         * client connects to the server, a new thread is created
+         * for that specific client.
+         */
 
-	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException
-	{
-            /**
-             * Create connection to server.
-             * Uses localhost:4446 as the default settings
-             * Initialize Scanner for user input.
-             */
-            InetAddress host = InetAddress.getLocalHost();
-        	Socket socket = new Socket(host.getHostName(), 4446);
+		ServerSocket server = new ServerSocket(4446);
+        System.out.println("Client Started: "+ server);
 
-            /**
-             * Creates a conditional loop where the client can only
-             * send a max of 10 messages before terminating.
-             */
+   
+        	ConnectionHandler c = new ConnectionHandler();
+        	c.run();
 
-            int data1=1;
-    		int data2=1;
-            while (true)
-            {
+    }
+}
 
-                /**
-                 * Send stored String to server.
-                 * Receive Message.
-                 */
+class ConnectionHandler extends Thread
+{
+	
+	private Socket socket;
+    DataInputStream input;
+    DataOutputStream output;
+    public ConnectionHandler(Socket socket) throws IOException
+    {
+        this.socket = socket;
+        input = new DataInputStream(socket.getInputStream());
+        output = new DataOutputStream(socket.getOutputStream());
 
-                sendMessage(SOURCE, randomDestination(), data1, data2, socket);
+    }
+            
+	
+	public void run()
+    {
+		
+    int data1=1;
+	int data2=1;
+    while (true)
+    {
+    	Socket socket = server.accept();
+    	
+        /**
+         * Send stored String to server.
+         * Receive Message.
+         */
 
-
-
-                /**
-                 * Receive Message from Router
-                 */
-                byte[] receiveMessage = receiveMessage(socket);
-
-
-
-                /**
-                 * Increase data by 1, sleep 2 seconds
-                 */
-                data1++;
-                data2++;
-                Thread.sleep(2000);
-            }
-
-            /**
-             * Close all streams and finally the socket.
-             */
-            //socket.close();
-            //userInput.close();
-	}
+        try
+		{
+			sendMessage(SOURCE, randomDestination(), data1, data2, socket);
+		} 
+        catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 
 
+        /**
+         * Receive Message from Router
+         */
+        try
+		{
+			byte[] receiveMessage = receiveMessage(socket);
+		} 
+        catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+
+
+        /**
+         * Increase data by 1, sleep 2 seconds
+         */
+        data1++;
+        data2++;
+        try
+		{
+			Thread.sleep(2000);
+		} 
+        catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+    }
+
+}
 
 
 	/**

@@ -27,25 +27,28 @@ public class Router
 
 		@SuppressWarnings("resource") //Server is never closed
 		ServerSocket server = new ServerSocket(4446);
+		Router r = new Router();
         System.out.println("Router Started: "+ server);
 
         while (true)
         {
         	Socket socket = server.accept();
-        	ConnectionHandler c = new ConnectionHandler(socket);
-        	c.start();
+        	RouterHandler rh  = new RouterHandler(socket, r);
+        	rh.start();
         }
     }
 }
 
-class ConnectionHandler extends Thread
+class RouterHandler extends Thread
 {
     private Socket socket;
+    private Router router;
     DataInputStream input;
     DataOutputStream output;
-    public ConnectionHandler(Socket socket) throws IOException
+    public RouterHandler(Socket socket, Router r) throws IOException
     {
         this.socket = socket;
+        this.router = r;
         input = new DataInputStream(socket.getInputStream());
         output = new DataOutputStream(socket.getOutputStream());
 
@@ -53,23 +56,29 @@ class ConnectionHandler extends Thread
 
 
     /**
-     * Runs the individual thread.
+     * Here is where we read in a packet, print to console, and then forward to another router.
      */
     public void run()
     {
-    	/**
-    	 * Continue to receive and send requests from Client until socket connection is terminated.
-    	 */
     	while (socket.isConnected() && !socket.isClosed())
     	{
-
-
-
+    		byte[] message = receiveMessage();
     	}
+    	
     }
 
 
-
+	/**
+	 * Calculates checksum of received message. Returns the value of the checksum.
+	 * @param data Byte array of received message.
+	 * @return The computed checksum value
+	 */
+	public static byte checksum(byte[] data)
+	{
+		int checksum = 256 - (data[0]+data[1]+data[3]+data[4]);
+		return (byte)(checksum);
+	}
+	
 
 
 	/**
@@ -77,52 +86,168 @@ class ConnectionHandler extends Thread
 	 *  @return message The received message from a client.
 	 */
 
-    public byte[] receiveMessage(byte[] message)
+    public byte[] receiveMessage()
     {
-		byte[] inputMsg= new byte[5];
+		byte[] message= new byte[5];
 		try
 		{
-			input.readFully(inputMsg, 0, 5);
+			input.readFully(message, 0, 5);
 		}
 		catch (IOException e1)
 		{
 			e1.printStackTrace();
 		}
-		System.out.println("Router Received Message from Client: " + inputMsg[0]);
-		System.out.println("Data1: " + inputMsg[3]);
-		System.out.println("Data2: " + inputMsg[4]);
+        byte calculateChecksum = checksum(message);
+        if(calculateChecksum == message[2])
+        {
+        	System.out.println("Client Received Message from Source: " + message[0]);
+        	System.out.println("Checksum valid, message is not corrupt.");
+    		System.out.println("Data1: " + message[3]);
+    		System.out.println("Data2: " + message[4]);
+    		
+    		//Send message to another client or router
+    		sendMessage(message);
+        }
+        else
+        {
+        	System.out.println("Checksum not vaild, message may be corrupt.");
+        }
 
 		return message;
     }
+    
+    
 
 
     /**
-     *  Send message to a client.
+     *  Forward a message to another client.
      */
 
     public void sendMessage(byte[] message)
     {
-        try
+        int destination = message[1];
+        int currentRouter = 0; //not true
+    	
+    	if(destination == currentRouter)
+        {
+        	//send to client
+        }
+    	else
+    	{
+    		//send to router
+    	}
+    	
+    	
+    	
+    	try
         {
 			output.write(message);
+			output.flush();
 		}
         catch (IOException e)
         {
 			e.printStackTrace();
         }
 
-        System.out.println("Router Sent Message to Client: " + message[1]);
-		System.out.println("Data1: " + message[3]);
-		System.out.println("Data2: " + message[4]);
     }
+    
+    
 
+    
+    
+
+    /**
+     * Routing table for messages to be sent.
+     * @param message
+     * @return router the correct router.
+     */
     public int routingTable(byte[] message)
     {
+    	int source = message[0];
     	int destination= message[1];
     	int route = 0;
 
-
-
+    	//Router 1
+    	if(source == 1)
+    	{
+        	if(destination == 1)
+        	{
+        		route = 1;
+        	}
+        	else if(destination == 2)
+        	{
+        		route = 2;
+        	}
+        	else if(destination == 3)
+        	{
+        		
+        	}
+        	else if(destination == 4)
+        	{
+        		
+        	}
+    	}
+    	//Router 2
+    	else if(source == 2)
+    	{
+        	if(destination == 1)
+        	{
+        		
+        	}
+        	else if(destination == 2)
+        	{
+        		
+        	}
+        	else if(destination == 3)
+        	{
+        		
+        	}
+        	else if(destination == 4)
+        	{
+        		
+        	}
+    	}
+    	
+    	//Router 3
+    	else if(source == 3)
+    	{
+        	if(destination == 1)
+        	{
+        		
+        	}
+        	else if(destination == 2)
+        	{
+        		
+        	}
+        	else if(destination == 3)
+        	{
+        		
+        	}
+        	else if(destination == 4)
+        	{
+        		
+        	}
+    	}
+    	//Router 4
+    	else if(source == 4)
+    	{
+        	if(destination == 1)
+        	{
+        		
+        	}
+        	else if(destination == 2)
+        	{
+        		
+        	}
+        	else if(destination == 3)
+        	{
+        		
+        	}
+        	else if(destination == 4)
+        	{
+        		
+        	}
+    	}
 
 
     	return route;
