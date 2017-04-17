@@ -18,26 +18,19 @@ Date: 4 April 2017
 #include <pthread.h>
 #include <stdint.h>
 #include <arpa/inet.h>
-
-//change IP addresses depending on connections
-#define CLIENT_IP "127.0.0.1"
-#define ROUTER1_IP "127.0.0.1"
-#define ROUTER2_IP "127.0.0.1"
-#define ROUTER3_IP "127.0.0.1"
-#define ROUTER4_IP "127.0.0.1"
 			
 
 //structure for passing data to threads
 struct data{
 	long socket;
 	int server_number;
-} to_thread, *thread_data;
+}thread_data, *to_thread;
 
 uint8_t message[5];
 
 struct lookup{
-	int neighbor1_num, neighbor2_num;
-	char neighbor1_ip, neighbor2_ip;
+	int self_num,neighbor1_num, neighbor2_num;
+	char self_ip[20], client_ip[20], neighbor1_ip[20], neighbor2_ip[20];
 }table;
 
 //checksum function
@@ -60,7 +53,7 @@ void* send_func(void* argp)
 
 	printf("Router send thread created\n\n");
 
-	char send_ip[9];
+	char send_ip[20];
 	char recvline[50];
   int sockfd;
   int exit;
@@ -71,10 +64,10 @@ void* send_func(void* argp)
 	//
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-	if (thread_data->server_number == message[1])
+	if (table.self_num == message[1])
 	{
 		//send_ip = CLIENT_IP;
-    		strcpy(send_ip, CLIENT_IP);
+    		strcpy(send_ip, table.client_ip);
 		
 	}
 	else 
@@ -82,17 +75,17 @@ void* send_func(void* argp)
 		if(message[1] == table.neighbor1_num)
 		{
 			//send_ip = table.neighbor1_ip;
-      			strcpy(send_ip, &table.neighbor1_ip);
+      			strcpy(send_ip, table.neighbor1_ip);
 		}
 		else if(message[1] == table.neighbor2_num)
 		{
 			//send_ip = table.neighbor2_ip;
-      			strcpy(send_ip, &table.neighbor2_ip);
+      			strcpy(send_ip, table.neighbor2_ip);
 		}
 		else
 		{
 			//send_ip = table.neighbor1_ip;
-      			strcpy(send_ip, &table.neighbor1_ip); 
+      			strcpy(send_ip, table.neighbor1_ip); 
 		}
 	}
 
@@ -101,19 +94,20 @@ void* send_func(void* argp)
 	bzero (&addr, sizeof (addr));	
 
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(4447);
+	addr.sin_port = htons(8080);
 
+	//addr.sin_addr.s_addr = inet_addr(send_ip);
 	inet_pton(AF_INET, send_ip, &(addr.sin_addr));
 
 	connect(sockfd, (struct sockaddr *)&addr, sizeof(addr));
 
-	printf("connected to client \n\n");
+	printf("(router) connected to client \n\n");
 
 	exit = write(sockfd, message, sizeof(message)+1);
 
 	if(exit < 0 ) 
 	{
-		printf("(router) Send to destination failed.\n\n");
+		printf("(router) Send to %s destination failed.\n\n",send_ip);
 	}
 	
 	//read the receive acknowledgement from the router
@@ -131,12 +125,11 @@ void* send_func(void* argp)
 	pthread_exit(NULL);
 }
 
-void* receive(void* argp)
+void* receive(void * argp )
 {
-	//set thread_data structure pointer equal to void* pointer passed to thread
-	thread_data = (struct data *) argp;
+	
 
-		printf("Router %d receive thread created.\n\n", thread_data->server_number);
+		printf("Router %d receive thread created.\n\n", table.self_num);
 
 		long connection_socket;		
 		
@@ -144,7 +137,7 @@ void* receive(void* argp)
 		
 
 		//set variable to socket connection		
-		 connection_socket = thread_data->socket;
+		 connection_socket = thread_data.socket;
 
 
 		//zero the message variable
@@ -174,7 +167,7 @@ void* receive(void* argp)
 			//print the message received by the router
 			for(temp = 0; temp < 5; temp ++)
                		{
-                        	printf("(router) message received byte %d = " "%" PRIu8 ".\n", temp, message[temp]);
+                        	printf("(router %d) message received byte %d = " "%" PRIu8 ".\n", table.self_num, temp, message[temp]);
                		}
 			
 			//send an acknowledgement to the sender that the router received the message
@@ -195,7 +188,7 @@ void* receive(void* argp)
 
      			 printf("creating router send thread\n\n");
 
-			error = pthread_create(&send_thread,NULL, send_func, (void *)&to_thread);
+			error = pthread_create(&send_thread,NULL, send_func, (void *)to_thread);
 		
 			
 			if(error)
@@ -232,6 +225,8 @@ int main()
 
 	int server_num;
 
+	char client_ip[20], router1_ip[20], router2_ip[20], router3_ip[20], router4_ip[20];
+
 	int send_flag;
 	
 	signal(SIGPIPE, SIG_IGN);
@@ -243,35 +238,67 @@ int main()
 	printf("\nPlease enter router number to initialize (must be same as connecting client): ");
 	scanf("%d", &server_num);
 	printf("\n\n");
- 
+
+	printf("\nPlease enter ip number for client: ");
+	scanf("%s", client_ip);
+	printf("\n\n");
+
+	strcpy(table.client_ip, client_ip);
+
+
+	printf("\nPlease enter ip number for router #1: ");
+	scanf("%s", router1_ip);
+	printf("\n\n");
+
+	printf("\nPlease enter ip number for router #2: ");
+	scanf("%s", router2_ip);
+	printf("\n\n");
+
+	printf("\nPlease enter ip number for router #3: ");
+	scanf("%s", router3_ip);
+	printf("\n\n");
+
+	printf("\nPlease enter ip number for router #4: ");
+	scanf("%s", router4_ip);
+	printf("\n\n");
+
+
 	//save server number
-	to_thread.server_number = server_num;
+	thread_data.server_number = server_num;
 
 	//build lookup table with neighboring router numbers
 	switch(server_num){
 		case 1: 
+			table.self_num = 1;
 			table.neighbor1_num = 2;
 			table.neighbor2_num = 4;
-			table.neighbor1_ip = *ROUTER2_IP;
-			table.neighbor2_ip = *ROUTER4_IP;
+			strcpy(table.self_ip, router1_ip);
+			strcpy(table.neighbor1_ip, router2_ip);
+			strcpy(table.neighbor2_ip, router4_ip);
 			break;
 		case 2:
+			table.self_num = 2;
 			table.neighbor1_num = 1;
 			table.neighbor2_num = 3;
-			table.neighbor1_ip = *ROUTER1_IP;
-			table.neighbor2_ip = *ROUTER3_IP;
+			strcpy(table.self_ip, router2_ip);
+			strcpy(table.neighbor1_ip, router1_ip);
+			strcpy(table.neighbor2_ip, router3_ip);
 			break;
 		case 3: 
+			table.self_num = 3;
 			table.neighbor1_num = 2;
 			table.neighbor2_num = 4;
-			table.neighbor1_ip = *ROUTER2_IP;
-			table.neighbor2_ip = *ROUTER4_IP;
+			strcpy(table.self_ip, router3_ip);
+			strcpy(table.neighbor1_ip, router2_ip);
+			strcpy(table.neighbor2_ip, router4_ip);
 			break;
 		case 4:
+			table.self_num = 4;
 			table.neighbor1_num = 1;
 			table.neighbor2_num = 3;
-			table.neighbor1_ip = *ROUTER1_IP;
-			table.neighbor2_ip = *ROUTER3_IP;
+			strcpy(table.self_ip, router4_ip);
+			strcpy(table.neighbor1_ip, router1_ip);
+			strcpy(table.neighbor2_ip, router3_ip);
 			break;
 	}
 
@@ -289,7 +316,7 @@ int main()
 
 		router_info.sin_family = AF_INET;
 		router_info.sin_addr.s_addr = htons(INADDR_ANY);
-		router_info.sin_port = htons(4446);
+		router_info.sin_port = htons(8080);
 
 		bind(listen_socket,(struct sockaddr*)&router_info, sizeof(router_info)); 
 
@@ -300,11 +327,11 @@ int main()
 		//create thread for receive socket accept
 		comm_socket = accept(listen_socket, (struct sockaddr*) NULL, NULL);
 
-		to_thread.socket = comm_socket;
+		thread_data.socket = comm_socket;
 
 		printf("\ncreating router receive thread.\n");
 
-		error = pthread_create(&receive_thread,NULL, receive, (void *)&to_thread);
+		error = pthread_create(&receive_thread,NULL, receive,(void *)to_thread);
 		
 		if(error)
 		{
@@ -326,6 +353,6 @@ int main()
 	
 
 
-	pthread_exit(NULL);
+	return 0;
 }
 

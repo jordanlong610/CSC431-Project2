@@ -48,7 +48,7 @@ void * receive_func(void * argp)
 
 	uint8_t message[5];
 	long error;
-	struct sockaddr_in router_info;
+	struct sockaddr_in listen_info;
 	long listen_socket, comm_socket;
 
 	while(1)
@@ -64,13 +64,13 @@ void * receive_func(void * argp)
 		if (setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
    			printf("setsockopt(SO_REUSEADDR) failed\n\n");
 
-		bzero(&router_info, sizeof(router_info));
+		bzero(&listen_info, sizeof(listen_info));
 
-		router_info.sin_family = AF_INET;
-		router_info.sin_addr.s_addr = htons(INADDR_ANY);
-		router_info.sin_port = htons(4447);
+		listen_info.sin_family = AF_INET;
+		listen_info.sin_addr.s_addr = htons(INADDR_ANY);
+		listen_info.sin_port = htons(8080);
 
-		bind(listen_socket,(struct sockaddr*)&router_info, sizeof(router_info)); 
+		bind(listen_socket,(struct sockaddr*)&listen_info, sizeof(listen_info)); 
 
 		printf("\n\nrouter waiting for connection...\n\n");
 
@@ -149,7 +149,7 @@ void * send_func(void * argp)
 	{
 		srand(time(NULL));
 
-		destination = rand() %4 + 1;
+		destination = 2; //rand() %4 + 1;
 		
 		//zero out the send and receive variables
 		bzero(sendline, 5);
@@ -190,7 +190,7 @@ void * send_func(void * argp)
 		routeraddr.sin_family = AF_INET;
 
 		//set the socket to connect to
-		routeraddr.sin_port = htons(4446);
+		routeraddr.sin_port = htons(8080);
 		
 		//set the ip to connect to which will the the associated router
 		inet_pton(AF_INET,"127.0.0.1", &(routeraddr.sin_addr));
