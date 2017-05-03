@@ -9,8 +9,8 @@ import java.net.Socket;
 public class Router
 {
 	/**
-	 * Simple server to take in a string of text 10 characters long, reverse it's order
-	 * and then send it back to the client.
+	 * Router that takes in message from either its connected client, or from another router.
+	 * It will read the message and send it to its correct destination router or client.
 	 *
 	 *
 	 * @author Jordan Long, Chris Lashley, Jeff Titanich, Kyle Shoop
@@ -20,7 +20,7 @@ public class Router
     public static void main(String[] args) throws IOException
     {
         /**
-         * A server is created listening on port 4446. Each time a new
+         * A Router is created listening on port 4446. Each time a new
          * client connects to the server, a new thread is created
          * for that specific client.
          */
@@ -39,6 +39,7 @@ public class Router
     }
 }
 
+@SuppressWarnings("unused")
 class RouterHandler extends Thread
 {
     private Socket socket;
@@ -56,7 +57,8 @@ class RouterHandler extends Thread
 
 
     /**
-     * Here is where we read in a packet, print to console, and then forward to another router.
+     * Run method for each thread. While the socket is connected, it will read received packets, print to console, 
+     * and then forward to another router or it's connected client.
      */
     public void run()
     {
@@ -100,7 +102,7 @@ class RouterHandler extends Thread
         byte calculateChecksum = checksum(message);
         if(calculateChecksum == message[2])
         {
-        	System.out.println("Client Received Message from Source: " + message[0]);
+        	System.out.println("Router Received Message from Source: " + message[0]);
         	System.out.println("Checksum valid, message is not corrupt.");
     		System.out.println("Data1: " + message[3]);
     		System.out.println("Data2: " + message[4]);
@@ -120,7 +122,7 @@ class RouterHandler extends Thread
 
 
     /**
-     *  Forward a message to another client.
+     *  Forward a message to another Router or Client.
      */
 
     public void sendMessage(byte[] message)
@@ -156,102 +158,110 @@ class RouterHandler extends Thread
 
 
 
-    /**
-     * Routing table for messages to be sent.
-     * @param message
-     * @return router the correct router.
-     */
-    public int routingTable(byte[] message)
-    {
-    	int source = message[0];
-    	int destination= message[1];
-    	int route = 0;
+	/**
+	 * Routing table for messages to be sent.
+	 * 
+	 * @param message received message from router.
+	 * @return router the correct router.
+	 */
+	public int routingTable(byte[] message)
+	{
+		int source = message[0];
+		int destination = message[1];
+		int route = 0;
 
-    	//Router 1
-    	if(source == 1)
-    	{
-        	if(destination == 1)
-        	{
-        		route = 1;
-        	}
-        	else if(destination == 2)
-        	{
-        		route = 2;
-        	}
-        	else if(destination == 3)
-        	{
-
-        	}
-        	else if(destination == 4)
-        	{
-
-        	}
-    	}
-    	//Router 2
-    	else if(source == 2)
-    	{
-        	if(destination == 1)
-        	{
-
-        	}
-        	else if(destination == 2)
-        	{
-
-        	}
-        	else if(destination == 3)
-        	{
-
-        	}
-        	else if(destination == 4)
-        	{
-
-        	}
-    	}
-
-    	//Router 3
-    	else if(source == 3)
-    	{
-        	if(destination == 1)
-        	{
-
-        	}
-        	else if(destination == 2)
-        	{
-
-        	}
-        	else if(destination == 3)
-        	{
-
-        	}
-        	else if(destination == 4)
-        	{
-
-        	}
-    	}
-    	//Router 4
-    	else if(source == 4)
-    	{
-        	if(destination == 1)
-        	{
-
-        	}
-        	else if(destination == 2)
-        	{
-
-        	}
-        	else if(destination == 3)
-        	{
-
-        	}
-        	else if(destination == 4)
-        	{
-
-        	}
-    	}
-
-
-    	return route;
-
+		/**
+		 *  If current client is destination router no need to use table.
+		 */
+		if (source == destination)
+			return source;
+		else
+		{
+			/**
+			 *  use table to find which router to send to get message to destination
+			 */
+			//Router 1
+			if(source == 1)
+			{
+				if(destination == 1)
+				{
+					route = 1;
+				}
+				else if(destination == 2)
+				{
+					route = 2;
+				}
+				else if(destination == 3)
+				{
+					route = 2;
+				}
+				else if(destination == 4)
+				{
+					route = 4;
+				}
+			}
+			//Router 2
+			else if(source == 2)
+			{
+				if(destination == 1)
+				{
+					route = 1;
+				}
+				else if(destination == 2)
+				{
+					route = 2;
+				}
+				else if(destination == 3)
+				{
+					route = 3;
+				}
+				else if(destination == 4)
+				{
+					route = 3;
+				}
+			}
+			//Router 3
+			else if(source == 3)
+			{
+				if(destination == 1)
+				{
+					route = 4;
+				}
+				else if(destination == 2)
+				{
+					route = 2;
+				}
+				else if(destination == 3)
+				{
+					route = 3;
+				}
+				else if(destination == 4)
+				{
+					route = 4;
+				}
+			}
+			//Router 4
+			else if(source == 4)
+			{
+				if(destination == 1)
+				{
+					route = 1;
+				}
+				else if(destination == 2)
+				{
+					route = 1;
+				}
+				else if(destination == 3)
+				{
+					route = 3;
+				}
+				else if(destination == 4)
+				{
+					route = 4;
+				}
+			}
+		}
+		return route;
     }
 
 

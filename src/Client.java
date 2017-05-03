@@ -19,7 +19,8 @@ public class Client
 
 	static int SOURCE = randomDestination();  //Static Client ID
 	static int PORT = 4446;
-
+	
+    @SuppressWarnings("unused")
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException
 	{
             /**
@@ -31,8 +32,8 @@ public class Client
         	Socket socket = new Socket(host.getHostName(), 4446);
 
             /**
-             * Creates a conditional loop where the client can only
-             * send a max of 10 messages before terminating.
+             * While the Client is connected, it will send a message to a random client every 2 seconds.
+             * The data in each message is incremented by 1 each loop.
              */
 
             int data1=1;
@@ -41,19 +42,15 @@ public class Client
             {
 
                 /**
-                 * Send stored String to server.
-                 * Receive Message.
+                 * Send a message to a random client.
                  */
-
                 sendMessage(SOURCE, randomDestination(), data1, data2, socket);
 
 
-
                 /**
-                 * Receive Message from Router
+                 * Receive Message from Router.
                  */
                 byte[] receiveMessage = receiveMessage(socket);
-
 
 
                 /**
@@ -63,12 +60,6 @@ public class Client
                 data2++;
                 Thread.sleep(2000);
             }
-
-            /**
-             * Close all streams and finally the socket.
-             */
-            //socket.close();
-            //userInput.close();
 	}
 
 
@@ -76,12 +67,13 @@ public class Client
 
 	/**
 	 * Sends message to a router. Creates a byte array with the 5 bytes of data.
+	 * Creates message, then computes checksum for message and adds value to the message before sending.
 	 *
-	 * @param source Source Client ID
-	 * @param destination Destination Client ID
-	 * @param data1 Data packet to be sent
-	 * @param data2Data packet to be sent
-	 * @param socket
+	 * @param source Source Client ID.
+	 * @param destination Destination Client ID.
+	 * @param data1 Data packet to be sent.
+	 * @param data2 Data packet to be sent.
+	 * @param socket Current socket connection to Router.
 	 * @throws IOException
 	 */
 	public static void sendMessage(int source, int destination, int data1, int data2, Socket socket) throws IOException
